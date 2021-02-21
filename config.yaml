@@ -1,0 +1,3 @@
+image_path: cat.png
+vertex_file: vertex.txt
+fragment_file: fragment.txt

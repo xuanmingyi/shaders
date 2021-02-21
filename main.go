@@ -91,7 +91,7 @@ func main() {
 		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, texture)
 
-		gl.DrawArrays(gl.TRIANGLES, 0, 4)
+		gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 
 
 		window.SwapBuffers()

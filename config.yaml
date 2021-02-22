@@ -1,3 +1,11 @@
 image_path: cat.png
-vertex_file: vertex.txt
-fragment_file: fragment.txt
+
+current: blur
+
+shaders:
+  - name: raw
+    vertex_file: raw/vertex.txt
+    fragment_file: raw/fragment.txt
+  - name: blur
+    vertex_file: blur/blur_vertex.txt
+    fragment_file: blur/blur_fragment.txt

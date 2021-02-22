@@ -1,4 +1,5 @@
 image_path: cat.png
+margin: 0
 
 current: blur
 

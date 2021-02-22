@@ -206,7 +206,7 @@ func main() {
 		panic(err)
 	}
 
-	//gl.UseProgram(program)
+	// gl.UseProgram(program)
 
 	gl.Viewport(0, 0, 320, 510)
 
@@ -231,52 +231,44 @@ func main() {
 		-1.0, -1.0, 0.0, 0.0, 0.0,
 		-1.0, 1.0, 0.0, 0.0, 1.0,
 	}
-
 	fmt.Println(vertexs)
 
-	/*
-
 	//	textureUniform := gl.GetUniformLocation(program, gl.Str("tex\x00"))
-		//	gl.Uniform1i(textureUniform, 0)
+	//	gl.Uniform1i(textureUniform, 0)
 
-		//	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
+	//	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
-		//	texture, err := newTexture()
-		//	if err != nil {
-		//		log.Fatalln(err)
-		//	}
-		/*
-			var vao uint32
-			var vbo uint32
+	//	texture, err := newTexture()
+	//	if err != nil {
+	//		log.Fatalln(err)
+	//	}
+	//	var vao uint32
+	//	var vbo uint32
 
-			gl.GenVertexArrays(1, &vao)
-			gl.GenBuffers(1, &vbo)
+	//	gl.GenVertexArrays(1, &vao)
+	//	gl.GenBuffers(1, &vbo)
 
-			gl.BindVertexArray(vao)
-			gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-			gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+	//	gl.BindVertexArray(vao)
+	//	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	//	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
 
-			vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
-			gl.EnableVertexAttribArray(vertAttrib)
-			gl.VertexAttribPointer(vertAttrib, 3, gl.FLOAT, false, 5*4, gl.PtrOffset(0))
+	//	vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
+	//	gl.EnableVertexAttribArray(vertAttrib)
+	//	gl.VertexAttribPointer(vertAttrib, 3, gl.FLOAT, false, 5*4, gl.PtrOffset(0))
 
-			texCoordAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vertTexCoord\x00")))
-			gl.EnableVertexAttribArray(texCoordAttrib)
-			gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 5*4, gl.PtrOffset(3*4))
+	//	texCoordAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vertTexCoord\x00")))
+	//	gl.EnableVertexAttribArray(texCoordAttrib)
+	//	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 5*4, gl.PtrOffset(3*4))
 
-			gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-			gl.BindVertexArray(0)
-	*/
+	//	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	//	gl.BindVertexArray(0)
+
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		//gl.BindVertexArray(vao)
-
-		//		gl.ActiveTexture(gl.TEXTURE0)
-		//		gl.BindTexture(gl.TEXTURE_2D, texture)
-
-		//		gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
-
+		// gl.BindVertexArray(vao)
+		// gl.ActiveTexture(gl.TEXTURE0)
+		// gl.BindTexture(gl.TEXTURE_2D, texture)
+		// gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}

@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -23,6 +24,7 @@ type config struct {
 	Width     int         `yaml:"-""`
 	Height    int         `yaml:"-"`
 	Image     image.Image `yaml:"-"`
+	Texture   uint32      `yaml:"-"`
 	Current   string      `yaml:"current"`
 	Shaders   []*struct {
 		Name         string `yaml:"name"`
@@ -32,19 +34,36 @@ type config struct {
 }
 
 type Shader struct {
+	Name           string
 	VertexSource   string
 	FragmentSource string
 	Program        uint32
+	VAO            uint32
+	VBO            uint32
 }
 
 var Config config
 var Shaders map[string]*Shader
+var vertexs = []float32{
+	// left
+	-1.0, 1.0, 0.0, 0.0, 1.0,
+	-1.0, -1.0, 0.0, 0.0, 0.0,
+	0.0, -1.0, 0.0, 1.0, 0.0,
+	0.0, 1.0, 0.0, 1.0, 1.0,
+
+	// right
+	0.0, 1.0, 0.0, 0.0, 1.0,
+	0.0, -1.0, 0.0, 0.0, 0.0,
+	1.0, -1.0, 0.0, 1.0, 0.0,
+	1.0, 1.0, 0.0, 1.0, 1.0,
+}
 
 func GetShader(name string) (*Shader, error) {
 	for _, _shader := range Config.Shaders {
 		if _shader.Name == name {
 			if _, ok := Shaders[name]; !ok {
 				shader := new(Shader)
+				shader.Name = name
 
 				content, err := ioutil.ReadFile(path.Join("shaders", _shader.VertexFile))
 				if err != nil {
@@ -69,6 +88,16 @@ func GetShader(name string) (*Shader, error) {
 		}
 	}
 	return nil, fmt.Errorf("无法获取 %s shader", name)
+}
+
+func (s *Shader) UseProgram() {
+	gl.UseProgram(s.Program)
+	gl.BindVertexArray(s.VAO)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, Config.Texture)
+
+	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 }
 
 func (s *Shader) InitProgram() error {
@@ -104,6 +133,42 @@ func (s *Shader) InitProgram() error {
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
 
+	gl.UseProgram(s.Program)
+
+	textureUniform := gl.GetUniformLocation(s.Program, gl.Str("tex\x00"))
+	gl.Uniform1i(textureUniform, 0)
+
+	gl.BindFragDataLocation(s.Program, 0, gl.Str("outputColor\x00"))
+
+	Config.Texture, err = newTexture()
+	if err != nil {
+		panic(err)
+	}
+
+	gl.GenVertexArrays(1, &s.VAO)
+	gl.BindVertexArray(s.VAO)
+
+	gl.GenBuffers(1, &s.VBO)
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.VBO)
+
+	if s.Name == "raw" {
+		gl.BufferData(gl.ARRAY_BUFFER, len(vertexs) * 4 / 2, gl.Ptr(vertexs), gl.STATIC_DRAW)
+	}else{
+		p := vertexs[len(vertexs)/2:]
+		gl.BufferData(gl.ARRAY_BUFFER, len(vertexs) * 4 /2, gl.Ptr(p), gl.STATIC_DRAW)
+	}
+
+	vertAttrib := uint32(gl.GetAttribLocation(s.Program, gl.Str("vert\x00")))
+	gl.EnableVertexAttribArray(vertAttrib)
+	gl.VertexAttribPointer(vertAttrib, 3, gl.FLOAT, false, 5*4, gl.PtrOffset(0) )
+
+	texCoordAttrib := uint32(gl.GetAttribLocation(s.Program, gl.Str("vertTexCoord\x00")))
+	gl.EnableVertexAttribArray(texCoordAttrib)
+	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 5*4, gl.PtrOffset(3*4))
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindVertexArray(0)
+
 	return nil
 }
 
@@ -131,6 +196,9 @@ func init() {
 
 	Config.Width = Config.Image.Bounds().Size().X*2 + 4*Config.Margin
 	Config.Height = Config.Image.Bounds().Size().Y + 2*Config.Margin
+
+	Shaders = make(map[string]*Shader)
+	runtime.LockOSThread()
 }
 
 func compileShader(source string, shaderType uint32) (uint32, error) {
@@ -195,6 +263,7 @@ func main() {
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
 	window, err := glfw.CreateWindow(Config.Width, Config.Height, "XMY", nil, nil)
 	if err != nil {
@@ -206,69 +275,21 @@ func main() {
 		panic(err)
 	}
 
-	// gl.UseProgram(program)
 
-	gl.Viewport(0, 0, 320, 510)
+	shader1, _ := GetShader("raw")
+	shader2, _ := GetShader(Config.Current)
+	gl.UseProgram(shader1.Program)
+
+	gl.Viewport(0, 0, int32(Config.Width), int32(Config.Height))
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
-	var vertexs = []float32{
-		// left
-		-1.0, 1.0, 0.0, 0.0, 1.0,
-		-1.0, -1.0, 0.0, 0.0, 0.0,
-		0.0, -1.0, 0.0, 1.0, 0.0,
-		0.0, 1.0, 0.0, 1.0, 1.0,
-
-		// right
-		0.0, 1.0, 0.0, 0.0, 1.0,
-		0.0, -1.0, 0.0, 0.0, 0.0,
-		1.0, -1.0, 0.0, 1.0, 0.0,
-		1.0, 1.0, 0.0, 1.0, 1.0,
-
-		// others
-		1.0, 1.0, 0.0, 1.0, 1.0,
-		1.0, -1.0, 0.0, 1.0, 0.0,
-		-1.0, -1.0, 0.0, 0.0, 0.0,
-		-1.0, 1.0, 0.0, 0.0, 1.0,
-	}
-	fmt.Println(vertexs)
-
-	//	textureUniform := gl.GetUniformLocation(program, gl.Str("tex\x00"))
-	//	gl.Uniform1i(textureUniform, 0)
-
-	//	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
-
-	//	texture, err := newTexture()
-	//	if err != nil {
-	//		log.Fatalln(err)
-	//	}
-	//	var vao uint32
-	//	var vbo uint32
-
-	//	gl.GenVertexArrays(1, &vao)
-	//	gl.GenBuffers(1, &vbo)
-
-	//	gl.BindVertexArray(vao)
-	//	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	//	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-
-	//	vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
-	//	gl.EnableVertexAttribArray(vertAttrib)
-	//	gl.VertexAttribPointer(vertAttrib, 3, gl.FLOAT, false, 5*4, gl.PtrOffset(0))
-
-	//	texCoordAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vertTexCoord\x00")))
-	//	gl.EnableVertexAttribArray(texCoordAttrib)
-	//	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, 5*4, gl.PtrOffset(3*4))
-
-	//	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-	//	gl.BindVertexArray(0)
-
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		// gl.BindVertexArray(vao)
-		// gl.ActiveTexture(gl.TEXTURE0)
-		// gl.BindTexture(gl.TEXTURE_2D, texture)
-		// gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
+
+		shader1.UseProgram()
+		shader2.UseProgram()
+
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}

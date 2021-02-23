@@ -1,4 +1,4 @@
-image_path: cat.png
+image_path: girl1.png
 margin: 0
 
 current: blur
@@ -10,3 +10,6 @@ shaders:
   - name: blur
     vertex_file: blur/blur_vertex.txt
     fragment_file: blur/blur_fragment.txt
+  - name: oldphoto
+    vertex_file: oldphoto/oldphoto_vertex.txt
+    fragment_file: oldphoto/oldphoto_fragment.txt

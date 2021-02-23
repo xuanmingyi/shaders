@@ -1,0 +1,20 @@
+#version 330 core
+
+uniform sampler2D tex;
+
+in vec2 fragTexCoord;
+
+out vec4 outputColor;
+
+void main()
+{
+    vec4 s;
+    float r, g, b;
+    s = texture(tex, fragTexCoord);
+
+    r = 0.393*s.r + 0.769*s.g + 0.189*s.b;
+    g = 0.349*s.r + 0.686*s.g + 0.168*s.b;
+    b = 0.272*s.r + 0.534*s.g + 0.131*s.b;
+
+    outputColor = vec4(r, g, b, s.a);
+}

@@ -8,5 +8,12 @@ out vec4 outputColor;
 
 void main()
 {
-    outputColor = texture(tex, fragTexCoord);
+    vec4 sample0, sample1, sample2, sample3;
+    float step=0.005;
+    sample0 = texture(tex, vec2(fragTexCoord.x - step, fragTexCoord.y - step));
+    sample1 = texture(tex, vec2(fragTexCoord.x + step, fragTexCoord.y - step));
+    sample2 = texture(tex, vec2(fragTexCoord.x - step, fragTexCoord.y + step));
+    sample3 = texture(tex, vec2(fragTexCoord.x + step, fragTexCoord.y + step));
+
+    outputColor = (sample0 + sample1 + sample2 + sample3)/4.0;
 }

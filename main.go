@@ -97,6 +97,10 @@ func (s *Shader) UseProgram() {
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, Config.Texture)
 
+	current_time := glfw.GetTime()
+	current := gl.GetUniformLocation(s.Program, gl.Str("current\x00"))
+	gl.Uniform1f(current, float32(current_time))
+
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 }
 
@@ -253,6 +257,16 @@ func newTexture() (uint32, error) {
 	return texture, nil
 }
 
+
+func MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	if action == glfw.Press {
+		switch(button){
+		case glfw.MouseButtonLeft:
+			fmt.Println("按了左键")
+		}
+	}
+}
+
 func main() {
 
 	if err := glfw.Init(); err != nil {
@@ -284,9 +298,10 @@ func main() {
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
+	window.SetMouseButtonCallback(MouseButtonCallback)
+
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-
 		shader1.UseProgram()
 		shader2.UseProgram()
 
